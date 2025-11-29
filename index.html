@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Exploratorio y Preprocesamiento de Radiografías | Visión por Computador</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-code: #f3f4f6;
+            --border-color: #e5e7eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --code-color: #e11d48;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+            background: var(--bg-primary);
+        }
+        
+        /* Header */
+        header {
+            padding: 60px 0 40px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 40px;
+        }
+        
+        .blog-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+        
+        .blog-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-bottom: 12px;
+        }
+        
+        .blog-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .blog-meta span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .blog-meta span i {
+            font-size: 0.95rem;
+            color: var(--primary-color);
+        }
+        
+        .info-box h4 i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+        
+        /* Content */
+        .article-content {
+            padding-bottom: 60px;
+        }
+        
+        .article-content h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 48px;
+            margin-bottom: 24px;
+            line-height: 1.3;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+        }
+        
+        .article-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 40px;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        
+        .article-content h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 32px;
+            margin-bottom: 12px;
+        }
+        
+        .article-content p {
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            text-align: justify;
+        }
+        
+        .article-content ul,
+        .article-content ol {
+            margin: 20px 0;
+            padding-left: 30px;
+        }
+        
+        .article-content li {
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        
+        .article-content strong {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Code Blocks */
+        pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 24px 0;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+        
+        code {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.875rem;
+            background: var(--bg-code);
+            padding: 3px 6px;
+            border-radius: 4px;
+            color: var(--code-color);
+        }
+        
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: var(--text-primary);
+        }
+        
+        /* Images */
+        .image-container {
+            margin: 32px 0;
+            text-align: center;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .image-container img:hover {
+            transform: scale(1.02);
+        }
+        
+        .image-caption {
+            margin-top: 12px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        /* Image Grid */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 32px 0;
+        }
+        
+        .image-grid-item {
+            text-align: center;
+        }
+        
+        .image-grid-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .image-grid-item img:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin: 32px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        thead {
+            background: var(--bg-secondary);
+        }
+        
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        tbody tr:hover {
+            background: var(--bg-secondary);
+        }
+        
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Info Boxes */
+        .info-box {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 24px 0;
+            border-left: 4px solid var(--primary-color);
+            background: var(--bg-secondary);
+        }
+        
+        .info-box h4 {
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        
+        .info-box p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+        
+        /* Flow Diagram */
+        .flow-diagram {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: 8px;
+            margin: 32px 0;
+            border: 1px solid var(--border-color);
+        }
+        
+        .flow-step {
+            background: var(--bg-primary);
+            padding: 16px;
+            margin: 12px 0;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 4px;
+        }
+        
+        .flow-step h5 {
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .blog-title {
+                font-size: 2rem;
+            }
+            
+            .article-content h2 {
+                font-size: 1.5rem;
+            }
+            
+            .article-content h3 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="blog-title">Análisis Exploratorio y Preprocesamiento de Radiografías de Tórax</h1>
+            <p class="blog-subtitle">Pipeline de Preprocesamiento para Clasificación de Neumonía mediante Visión por Computador</p>
+            <div class="blog-meta">
+                <span><i class="fas fa-calendar-alt"></i> Semestre 2025-02</span>
+                <span><i class="fas fa-tag"></i> Visión por Computador 3009228</span>
+                <span><i class="fas fa-university"></i> Universidad Nacional de Colombia - Facultad de Minas</span>
+            </div>
+        </header>
+
+        <article class="article-content">
+            <!-- Introducción -->
+            <h2>1. Introducción</h2>
+            
+            <h3>1.1 Contexto del Problema</h3>
+            <p>
+                La neumonía es una infección respiratoria que inflama los alvéolos pulmonares, siendo una de las principales 
+                causas de mortalidad infantil a nivel mundial. El diagnóstico temprano y preciso es crucial para un tratamiento 
+                efectivo. Las radiografías de tórax son una herramienta diagnóstica fundamental, pero su interpretación requiere 
+                experiencia clínica y puede ser subjetiva.
+            </p>
+            
+            <p>
+                El desarrollo de sistemas automatizados de clasificación mediante visión por computador puede asistir a los 
+                profesionales de la salud en el diagnóstico, reduciendo tiempos de análisis y mejorando la consistencia. Sin 
+                embargo, el éxito de estos sistemas depende críticamente de un preprocesamiento adecuado de las imágenes, que 
+                debe abordar desafíos como variaciones en dimensiones, contraste, y la necesidad de aislar regiones de interés.
+            </p>
+
+            <h3>1.2 Objetivos</h3>
+            <p>
+                Este trabajo presenta un análisis exploratorio exhaustivo y un pipeline de preprocesamiento para radiografías 
+                de tórax, con los siguientes objetivos:
+            </p>
+            <ul>
+                <li><strong>Análisis exploratorio:</strong> Caracterizar el dataset en términos de distribución de clases, 
+                dimensiones de imágenes, y propiedades de intensidad.</li>
+                <li><strong>Mejora de contraste:</strong> Implementar y evaluar técnicas de ecualización adaptativa (CLAHE) 
+                para mejorar la visibilidad de estructuras pulmonares.</li>
+                <li><strong>Segmentación de ROI:</strong> Desarrollar un algoritmo para aislar la región de los pulmones, 
+                eliminando artefactos y estructuras no relevantes.</li>
+                <li><strong>Pipeline integrado:</strong> Diseñar un sistema de preprocesamiento completo y reproducible que 
+                prepare las imágenes para etapas posteriores de extracción de características y clasificación.</li>
+            </ul>
+
+            <div class="info-box">
+                <h4><i class="fas fa-database"></i> Dataset Utilizado</h4>
+                <p>
+                    Se utiliza el dataset <strong>Chest X-Ray Images (Pneumonia)</strong> de Kaggle, que contiene radiografías 
+                    de tórax etiquetadas en dos clases: <strong>NORMAL</strong> y <strong>PNEUMONIA</strong>. El dataset está 
+                    dividido en conjuntos de entrenamiento, validación y prueba, con un total de 5,856 imágenes.
+                </p>
+            </div>
+
+            <!-- Análisis Exploratorio -->
+            <h2>2. Análisis Exploratorio de Datos</h2>
+            
+            <h3>2.1 Distribución de Clases</h3>
+            <p>
+                El primer paso en cualquier proyecto de clasificación es entender la distribución de las clases. Un desbalance 
+                significativo puede afectar el rendimiento del modelo y requerir técnicas de balanceo.
+            </p>
+
+            <div class="image-container">
+                <img src="results/class_distribution.png" alt="Distribución de clases">
+                <p class="image-caption">
+                    Figura 1: Distribución de clases por split (train, validation, test). Se observa un desbalance significativo 
+                    en el conjunto de entrenamiento con un ratio de aproximadamente 2.89:1 (Pneumonia:Normal).
+                </p>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Split</th>
+                            <th>NORMAL</th>
+                            <th>PNEUMONIA</th>
+                            <th>Total</th>
+                            <th>Ratio (P:N)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Train</strong></td>
+                            <td>1,341</td>
+                            <td>3,875</td>
+                            <td>5,216</td>
+                            <td>2.89</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Validation</strong></td>
+                            <td>8</td>
+                            <td>8</td>
+                            <td>16</td>
+                            <td>1.00</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Test</strong></td>
+                            <td>234</td>
+                            <td>390</td>
+                            <td>624</td>
+                            <td>1.67</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-box">
+                <h4><i class="fas fa-exclamation-triangle"></i> Observaciones sobre el Desbalance</h4>
+                <p>
+                    <strong>Conjunto de entrenamiento:</strong> El ratio de 2.89:1 indica un desbalance moderado que puede 
+                    sesgar el modelo hacia la clase mayoritaria. Se recomienda considerar técnicas de balanceo como oversampling 
+                    (SMOTE), undersampling, o pesos de clase durante el entrenamiento.<br><br>
+                    <strong>Conjunto de validación:</strong> Con solo 16 imágenes, este conjunto es demasiado pequeño para 
+                    proporcionar evaluaciones confiables. Se recomienda redistribuir los datos o usar validación cruzada.<br><br>
+                    <strong>Conjunto de prueba:</strong> Presenta un desbalance menor (1.67:1), lo cual es más representativo 
+                    de un escenario real.
+                </p>
+            </div>
+
+            <h3>2.2 Visualización de Muestras</h3>
+            <p>
+                La inspección visual de muestras representativas permite entender las características visuales de cada clase 
+                y las variaciones presentes en el dataset.
+            </p>
+
+            <div class="image-container">
+                <img src="results/sample_images.png" alt="Muestras de imágenes">
+                <p class="image-caption">
+                    Figura 2: Ejemplos de radiografías de ambas clases. La fila superior muestra casos NORMAL y la inferior 
+                    casos PNEUMONIA. Se observan diferencias sutiles en la opacidad y textura del tejido pulmonar.
+                </p>
+            </div>
+
+            <h3>2.3 Análisis de Dimensiones</h3>
+            <p>
+                Las imágenes médicas típicamente presentan dimensiones variables dependiendo del equipo de captura y protocolos 
+                de adquisición. Es crucial normalizar las dimensiones para modelos de aprendizaje profundo que requieren entradas 
+                de tamaño fijo.
+            </p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Métrica</th>
+                            <th>Altura (px)</th>
+                            <th>Ancho (px)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Media</strong></td>
+                            <td>1,086 ± 444</td>
+                            <td>1,447 ± 413</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rango</strong></td>
+                            <td>[127, 2,663]</td>
+                            <td>[384, 2,720]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-box">
+                <h4><i class="fas fa-ruler"></i> Decisión de Normalización</h4>
+                <p>
+                    Dada la alta variabilidad en dimensiones (desviación estándar de ~400 píxeles) y el rango amplio, se decide 
+                    normalizar todas las imágenes a <strong>224×224 píxeles</strong>, que es el tamaño estándar para modelos 
+                    pre-entrenados como ResNet, VGG, y otros arquitecturas de CNN populares. Esta normalización se realiza 
+                    mediante interpolación bilineal preservando la relación de aspecto cuando sea posible.
+                </p>
+            </div>
+
+            <h3>2.4 Análisis de Intensidades</h3>
+            <p>
+                Las radiografías son imágenes en escala de grises donde la intensidad de cada píxel representa la densidad del 
+                tejido. Un análisis de las distribuciones de intensidad puede revelar diferencias entre clases y guiar decisiones 
+                de preprocesamiento.
+            </p>
+
+            <div class="image-container">
+                <img src="results/intensity_distribution.png" alt="Distribución de intensidades">
+                <p class="image-caption">
+                    Figura 3: Distribuciones de intensidad de píxeles para ambas clases. Las distribuciones muestran diferencias 
+                    sutiles, con casos de neumonía tendiendo a tener regiones más oscuras (mayor densidad) debido a la 
+                    consolidación pulmonar.
+                </p>
+            </div>
+
+            <!-- Preprocesamiento -->
+            <h2>3. Preprocesamiento de Imágenes</h2>
+            
+            <h3>3.1 Ecualización Adaptativa de Histograma (CLAHE)</h3>
+            
+            <h4>3.1.1 Fundamentos Teóricos</h4>
+            <p>
+                <strong>CLAHE (Contrast Limited Adaptive Histogram Equalization)</strong> es una técnica avanzada de mejora de 
+                contraste que supera las limitaciones de la ecualización global de histograma. A diferencia de la ecualización 
+                tradicional que procesa toda la imagen de manera uniforme, CLAHE divide la imagen en regiones (tiles) y aplica 
+                ecualización localmente, limitando la amplificación del contraste para evitar la amplificación excesiva de ruido.
+            </p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>Ecualización Global</th>
+                            <th>CLAHE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Procesamiento</strong></td>
+                            <td>Imagen completa</td>
+                            <td>Por regiones (tiles)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Control de ruido</strong></td>
+                            <td>Amplifica excesivamente</td>
+                            <td>Limitado por clipLimit</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Detalles locales</strong></td>
+                            <td>Se pierden</td>
+                            <td>Se preservan</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Uso en radiografías</strong></td>
+                            <td>No recomendado</td>
+                            <td><strong>Recomendado</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>3.1.2 Parámetros de CLAHE</h4>
+            <p>
+                CLAHE tiene dos parámetros principales que controlan su comportamiento:
+            </p>
+            <ul>
+                <li><strong>clipLimit:</strong> Limita la amplificación del contraste en cada tile. Valores típicos están entre 
+                2.0 y 4.0. Valores bajos preservan más el contraste original pero pueden no mejorar suficientemente, mientras 
+                que valores altos pueden introducir artefactos.</li>
+                <li><strong>tileGridSize:</strong> Define el número de tiles en cada dimensión (por ejemplo, (8,8) divide la 
+                imagen en 64 regiones). Tiles más pequeños capturan mejor detalles locales pero pueden ser más sensibles al ruido.</li>
+            </ul>
+
+            <h4>3.1.3 Comparación de Técnicas</h4>
+            <p>
+                Se comparó la ecualización global con CLAHE para evaluar la mejora en la visualización de estructuras pulmonares.
+            </p>
+
+            <div class="image-container">
+                <img src="results/clahe_comparison.png" alt="Comparación de técnicas de ecualización">
+                <p class="image-caption">
+                    Figura 4: Comparación entre imagen original, ecualización global y CLAHE. La ecualización global amplifica 
+                    excesivamente el ruido en regiones oscuras, mientras que CLAHE mejora el contraste preservando la calidad 
+                    de la imagen.
+                </p>
+            </div>
+
+            <h4>3.1.4 Análisis de Parámetros</h4>
+            <p>
+                Se realizó un análisis sistemático del efecto de los parámetros de CLAHE para determinar la configuración óptima.
+            </p>
+
+            <div class="image-container">
+                <img src="results/clahe_cliplimit_effect.png" alt="Efecto del parámetro clipLimit">
+                <p class="image-caption">
+                    Figura 5: Efecto del parámetro clipLimit en el resultado de CLAHE. Valores entre 2.0 y 3.0 ofrecen un buen 
+                    balance entre mejora de contraste y control de ruido.
+                </p>
+            </div>
+
+            <div class="image-container">
+                <img src="results/clahe_tilesize_effect.png" alt="Efecto del parámetro tileGridSize">
+                <p class="image-caption">
+                    Figura 6: Efecto del parámetro tileGridSize. Un tamaño de (8,8) es el estándar para radiografías, proporcionando 
+                    un buen balance entre detalle local y suavizado.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <h4><i class="fas fa-check-circle"></i> Configuración Óptima de CLAHE</h4>
+                <p>
+                    Basado en el análisis experimental, se selecciona la siguiente configuración:<br>
+                    <strong>clipLimit = 2.0</strong>: Ofrece buen balance entre contraste y control de ruido.<br>
+                    <strong>tileGridSize = (8, 8)</strong>: Estándar para radiografías, proporcionando ecualización local efectiva 
+                    sin introducir artefactos excesivos.
+                </p>
+            </div>
+
+            <h4>3.1.5 Aplicación a Múltiples Muestras</h4>
+            <p>
+                Se aplicó CLAHE a muestras representativas de ambas clases para validar la consistencia de la mejora.
+            </p>
+
+            <div class="image-container">
+                <img src="results/clahe_samples.png" alt="Muestras con CLAHE aplicado">
+                <p class="image-caption">
+                    Figura 7: Aplicación de CLAHE a múltiples muestras de ambas clases. Se observa una mejora consistente en la 
+                    visibilidad de estructuras pulmonares y detalles finos en todos los casos.
+                </p>
+            </div>
+
+            <h3>3.2 Segmentación de Región de Interés (Pulmones)</h3>
+            
+            <h4>3.2.1 Fundamentos</h4>
+            <p>
+                La segmentación de pulmones es un paso crucial en el preprocesamiento de radiografías de tórax. Al aislar la 
+                región de interés, eliminamos:
+            </p>
+            <ul>
+                <li><strong>Bordes de la imagen:</strong> Regiones negras o artefactos en los márgenes</li>
+                <li><strong>Texto y anotaciones:</strong> Marcas, fechas, y etiquetas añadidas por el equipo médico</li>
+                <li><strong>Estructuras óseas:</strong> Costillas y columna vertebral que pueden confundir al clasificador</li>
+                <li><strong>Tejido circundante:</strong> Regiones fuera del área pulmonar que no aportan información diagnóstica</li>
+            </ul>
+
+            <h4>3.2.2 Algoritmo de Segmentación</h4>
+            <p>
+                El algoritmo implementado sigue los siguientes pasos:
+            </p>
+            <ol>
+                <li><strong>Umbralización con Otsu:</strong> Binarización automática que separa regiones oscuras (pulmones) de 
+                regiones claras (huesos, fondo).</li>
+                <li><strong>Inversión:</strong> Los pulmones aparecen oscuros en radiografías, por lo que se invierte la imagen 
+                binaria para que los pulmones sean blancos.</li>
+                <li><strong>Operaciones morfológicas:</strong> Aplicación de apertura y cierre para eliminar ruido y conectar 
+                regiones desconectadas.</li>
+                <li><strong>Selección de componentes:</strong> Identificación de los dos componentes más grandes (pulmones 
+                izquierdo y derecho).</li>
+                <li><strong>Creación de máscara:</strong> Generación de una máscara binaria que define la región de interés.</li>
+            </ol>
+
+            <div class="image-container">
+                <img src="results/segmentation_process.png" alt="Proceso de segmentación">
+                <p class="image-caption">
+                    Figura 8: Visualización paso a paso del proceso de segmentación de pulmones. Cada etapa del algoritmo se 
+                    muestra para ilustrar cómo se aísla la región de interés.
+                </p>
+            </div>
+
+            <h4>3.2.3 Resultados de Segmentación</h4>
+            <p>
+                Se aplicó el algoritmo de segmentación a múltiples muestras de ambas clases para evaluar su robustez.
+            </p>
+
+            <div class="image-container">
+                <img src="results/segmentation_samples.png" alt="Muestras segmentadas">
+                <p class="image-caption">
+                    Figura 9: Resultados de segmentación aplicados a múltiples muestras. La máscara generada aísla 
+                    efectivamente la región pulmonar, eliminando artefactos y estructuras no relevantes.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <h4><i class="fas fa-info-circle"></i> Segmentación como Paso Opcional</h4>
+                <p>
+                    Aunque la segmentación mejora el enfoque en la región de interés, puede introducir errores en casos con 
+                    anatomía atípica o imágenes de baja calidad. Por esta razón, se implementa como un paso <strong>opcional</strong> 
+                    en el pipeline, permitiendo evaluar su impacto en el rendimiento del clasificador.
+                </p>
+            </div>
+
+            <h3>3.3 Pipeline Completo de Preprocesamiento</h3>
+            
+            <p>
+                El pipeline completo integra todos los pasos de preprocesamiento en una secuencia ordenada y reproducible:
+            </p>
+
+            <div class="flow-diagram">
+                <h4>Pipeline de Preprocesamiento</h4>
+                <div class="flow-step">
+                    <h5>1. Carga de Imagen</h5>
+                    <p>Lectura de la imagen en escala de grises desde el sistema de archivos.</p>
+                </div>
+                <div class="flow-step">
+                    <h5>2. Redimensionamiento</h5>
+                    <p>Normalización a 224×224 píxeles mediante interpolación bilineal.</p>
+                </div>
+                <div class="flow-step">
+                    <h5>3. Ecualización CLAHE</h5>
+                    <p>Aplicación de CLAHE con clipLimit=2.0 y tileGridSize=(8,8) para mejorar el contraste local.</p>
+                </div>
+                <div class="flow-step">
+                    <h5>4. Segmentación (Opcional)</h5>
+                    <p>Aislamiento de la región pulmonar mediante umbralización y operaciones morfológicas.</p>
+                </div>
+                <div class="flow-step">
+                    <h5>5. Normalización</h5>
+                    <p>Escalado de valores de píxeles al rango [0, 1] para estabilidad numérica en modelos de deep learning.</p>
+                </div>
+            </div>
+
+            <div class="image-container">
+                <img src="results/full_pipeline.png" alt="Pipeline completo">
+                <p class="image-caption">
+                    Figura 10: Visualización del pipeline completo aplicado a muestras de ambas clases. Cada columna muestra 
+                    el resultado de un paso del preprocesamiento.
+                </p>
+            </div>
+
+            <h4>3.3.1 Configuración Recomendada</h4>
+            <p>
+                Basado en el análisis experimental, se recomienda la siguiente configuración del preprocesador:
+            </p>
+
+            <pre><code>XRayPreprocessor(
+    target_size=(224, 224),
+    apply_clahe=True,
+    clahe_clip_limit=2.0,
+    clahe_tile_grid=(8, 8),
+    segment_lungs=False,  # Opcional: evaluar impacto
+    normalize=True
+)</code></pre>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parámetro</th>
+                            <th>Valor</th>
+                            <th>Justificación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>target_size</strong></td>
+                            <td>(224, 224)</td>
+                            <td>Tamaño estándar para modelos CNN pre-entrenados</td>
+                        </tr>
+                        <tr>
+                            <td><strong>apply_clahe</strong></td>
+                            <td>True</td>
+                            <td>Mejora significativa del contraste sin amplificar ruido</td>
+                        </tr>
+                        <tr>
+                            <td><strong>clahe_clip_limit</strong></td>
+                            <td>2.0</td>
+                            <td>Balance óptimo entre contraste y control de ruido</td>
+                        </tr>
+                        <tr>
+                            <td><strong>clahe_tile_grid</strong></td>
+                            <td>(8, 8)</td>
+                            <td>Estándar para radiografías, buen balance detalle/suavizado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>segment_lungs</strong></td>
+                            <td>False</td>
+                            <td>Evaluar impacto en clasificación; puede mejorar o empeorar según el caso</td>
+                        </tr>
+                        <tr>
+                            <td><strong>normalize</strong></td>
+                            <td>True</td>
+                            <td>Necesario para estabilidad numérica en modelos de deep learning</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Resultados y Métricas -->
+            <h2>4. Resultados y Métricas</h2>
+            
+            <h3>4.1 Estadísticas del Dataset</h3>
+            <p>
+                El análisis exploratorio reveló las siguientes características del dataset:
+            </p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Total de imágenes</strong></td>
+                            <td>5,856</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Clases</strong></td>
+                            <td>2 (NORMAL, PNEUMONIA)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dimensiones promedio</strong></td>
+                            <td>1,086 × 1,447 px</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Desviación estándar dimensiones</strong></td>
+                            <td>444 × 413 px</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rango de dimensiones</strong></td>
+                            <td>[127-2,663] × [384-2,720] px</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ratio desbalance (train)</strong></td>
+                            <td>2.89:1 (Pneumonia:Normal)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>4.2 Impacto del Preprocesamiento</h3>
+            <p>
+                El preprocesamiento implementado transforma las imágenes de manera que:
+            </p>
+            <ul>
+                <li><strong>Normalización dimensional:</strong> Todas las imágenes tienen dimensiones consistentes (224×224), 
+                permitiendo procesamiento en batch y uso de arquitecturas estándar.</li>
+                <li><strong>Mejora de contraste:</strong> CLAHE aumenta la visibilidad de estructuras pulmonares y detalles 
+                finos que pueden ser críticos para la clasificación.</li>
+                <li><strong>Enfoque en ROI:</strong> La segmentación opcional elimina ruido y artefactos, concentrando la 
+                información en la región relevante.</li>
+                <li><strong>Estabilidad numérica:</strong> La normalización a [0,1] asegura convergencia estable en algoritmos 
+                de optimización.</li>
+            </ul>
+
+            <!-- Análisis y Discusión -->
+            <h2>5. Análisis y Discusión</h2>
+            
+            <h3>5.1 Desafíos Identificados</h3>
+            
+            <h4>5.1.1 Desbalance de Clases</h4>
+            <p>
+                El desbalance significativo en el conjunto de entrenamiento (ratio 2.89:1) puede sesgar el modelo hacia la 
+                clase mayoritaria (PNEUMONIA). Para mitigar este problema, se recomienda:
+            </p>
+            <ul>
+                <li><strong>Pesos de clase:</strong> Asignar pesos inversamente proporcionales a la frecuencia de cada clase 
+                durante el entrenamiento.</li>
+                <li><strong>Oversampling:</strong> Técnicas como SMOTE o augmentación de datos para la clase minoritaria.</li>
+                <li><strong>Undersampling:</strong> Reducción selectiva de la clase mayoritaria, aunque esto reduce el tamaño 
+                del dataset.</li>
+                <li><strong>Métricas apropiadas:</strong> Usar F1-score, AUC-ROC, o precisión/recall balanceados en lugar de 
+                accuracy simple.</li>
+            </ul>
+
+            <h4>5.1.2 Conjunto de Validación Pequeño</h4>
+            <p>
+                El conjunto de validación con solo 16 imágenes es insuficiente para evaluaciones confiables. Se recomienda:
+            </p>
+            <ul>
+                <li><strong>Redistribución:</strong> Reasignar imágenes del conjunto de entrenamiento para crear un conjunto 
+                de validación más grande (típicamente 10-20% del total).</li>
+                <li><strong>Validación cruzada:</strong> Implementar k-fold cross-validation para evaluaciones más robustas.</li>
+            </ul>
+
+            <h4>5.1.3 Variabilidad en Dimensiones</h4>
+            <p>
+                La alta variabilidad en dimensiones (desviación estándar de ~400 píxeles) justifica la normalización. Sin 
+                embargo, el redimensionamiento puede introducir distorsiones. Consideraciones:
+            </p>
+            <ul>
+                <li><strong>Preservación de aspecto:</strong> Usar padding para mantener la relación de aspecto original 
+                cuando sea crítico.</li>
+                <li><strong>Interpolación:</strong> Evaluar diferentes métodos de interpolación (bilineal, bicúbica) para 
+                minimizar pérdida de información.</li>
+            </ul>
+
+            <h3>5.2 Decisiones de Diseño</h3>
+            
+            <h4>5.2.1 Selección de CLAHE sobre Ecualización Global</h4>
+            <p>
+                CLAHE fue seleccionado sobre ecualización global porque:
+            </p>
+            <ul>
+                <li>Preserva mejor los detalles locales en diferentes regiones de la imagen</li>
+                <li>Controla la amplificación de ruido mediante clipLimit</li>
+                <li>Es el estándar en procesamiento de imágenes médicas</li>
+                <li>Produce resultados visualmente superiores en comparación directa</li>
+            </ul>
+
+            <h4>5.2.2 Segmentación como Paso Opcional</h4>
+            <p>
+                La segmentación se implementa como opcional porque:
+            </p>
+            <ul>
+                <li>Puede fallar en casos con anatomía atípica o imágenes de baja calidad</li>
+                <li>Su impacto en el rendimiento del clasificador debe evaluarse empíricamente</li>
+                <li>Algunos modelos pueden beneficiarse de información contextual fuera de los pulmones</li>
+            </ul>
+
+            <h3>5.3 Limitaciones y Mejoras Futuras</h3>
+            
+            <h4>5.3.1 Limitaciones Actuales</h4>
+            <ul>
+                <li><strong>Segmentación básica:</strong> El algoritmo actual puede fallar en casos complejos. Técnicas más 
+                avanzadas como U-Net o modelos de segmentación profunda podrían mejorar la robustez.</li>
+                <li><strong>Parámetros fijos:</strong> Los parámetros de CLAHE son fijos. Una adaptación automática basada en 
+                características de la imagen podría optimizar resultados.</li>
+                <li><strong>Sin corrección de artefactos:</strong> No se implementa corrección de artefactos comunes como 
+                marcas de placa o sombras.</li>
+            </ul>
+
+            <h4>5.3.2 Mejoras Propuestas</h4>
+            <ul>
+                <li><strong>Augmentación de datos:</strong> Implementar rotaciones, traslaciones, y variaciones de contraste 
+                para aumentar la robustez del modelo.</li>
+                <li><strong>Normalización avanzada:</strong> Considerar normalización por percentiles o técnicas específicas 
+                para imágenes médicas.</li>
+                <li><strong>Segmentación profunda:</strong> Entrenar un modelo de segmentación específico para el dataset.</li>
+                <li><strong>Análisis de calidad:</strong> Implementar detección automática de imágenes de baja calidad para 
+                filtrado o procesamiento especial.</li>
+            </ul>
+
+            <!-- Conclusiones -->
+            <h2>6. Conclusiones</h2>
+            
+            <p>
+                Este trabajo presenta un análisis exploratorio exhaustivo y un pipeline de preprocesamiento completo para 
+                radiografías de tórax. Las principales conclusiones son:
+            </p>
+
+            <ol>
+                <li>
+                    <strong>Análisis exploratorio revelador:</strong> El dataset presenta un desbalance moderado (2.89:1) y 
+                    alta variabilidad en dimensiones, justificando la necesidad de normalización y técnicas de balanceo.
+                </li>
+                <li>
+                    <strong>CLAHE efectivo:</strong> La ecualización adaptativa con parámetros clipLimit=2.0 y tileGridSize=(8,8) 
+                    mejora significativamente el contraste y la visibilidad de estructuras pulmonares sin amplificar ruido.
+                </li>
+                <li>
+                    <strong>Segmentación funcional:</strong> El algoritmo de segmentación implementado aísla efectivamente 
+                    la región pulmonar en la mayoría de los casos, aunque su impacto en la clasificación debe evaluarse 
+                    empíricamente.
+                </li>
+                <li>
+                    <strong>Pipeline reproducible:</strong> El sistema de preprocesamiento diseñado es modular, configurable, 
+                    y reproducible, facilitando experimentación y comparación de técnicas.
+                </li>
+                <li>
+                    <strong>Preparación para clasificación:</strong> El preprocesamiento prepara adecuadamente las imágenes 
+                    para etapas posteriores de extracción de características y clasificación, con normalización dimensional 
+                    y mejora de contraste.
+                </li>
+            </ol>
+
+            <p>
+                El pipeline desarrollado proporciona una base sólida para la implementación de sistemas de clasificación 
+                automatizada de neumonía, con potencial para asistir a profesionales de la salud en el diagnóstico temprano 
+                y preciso de esta condición.
+            </p>
+
+            <!-- Referencias -->
+            <h2>7. Referencias</h2>
+            
+            <ol>
+                <li>
+                    Pizer, S. M., et al. (1987). <em>Adaptive histogram equalization and its variations</em>. 
+                    Computer Vision, Graphics, and Image Processing, 39(3), 355-368.
+                </li>
+                <li>
+                    Reza, A. M. (2004). <em>Realization of the contrast limited adaptive histogram equalization 
+                    (CLAHE) for real-time image enhancement</em>. Journal of VLSI Signal Processing Systems 
+                    for Signal, Image and Video Technology, 38(1), 35-44.
+                </li>
+                <li>
+                    Kermany, D. S., et al. (2018). <em>Identifying medical diagnoses and treatable diseases by 
+                    image-based deep learning</em>. Cell, 172(5), 1122-1131.
+                </li>
+                <li>
+                    Otsu, N. (1979). <em>A threshold selection method from gray-level histograms</em>. IEEE 
+                    Transactions on Systems, Man, and Cybernetics, 9(1), 62-66.
+                </li>
+                <li>
+                    He, K., et al. (2016). <em>Deep residual learning for image recognition</em>. Proceedings 
+                    of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 770-778.
+                </li>
+                <li>
+                    Simonyan, K., & Zisserman, A. (2014). <em>Very deep convolutional networks for large-scale 
+                    image recognition</em>. arXiv preprint arXiv:1409.1556.
+                </li>
+            </ol>
+
+            <div class="info-box">
+                <h4><i class="fas fa-folder-open"></i> Repositorio del Proyecto</h4>
+                <p>
+                    El código completo de este proyecto, incluyendo todos los scripts de análisis, visualización y 
+                    notebooks interactivos, está disponible en GitHub. El repositorio incluye documentación detallada 
+                    para reproducir todos los experimentos presentados en este reporte.
+                </p>
+                <p style="margin-top: 12px;">
+                    <strong>Repositorio:</strong> 
+                    <a href="https://github.com/andresvie/pneumonia_classification" target="_blank" style="color: var(--primary-color); text-decoration: none;">
+                        <i class="fab fa-github"></i> https://github.com/andresvie/pneumonia_classification
+                    </a>
+                </p>
+            </div>
+
+        </article>
+    </div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "exploratory": {
+    "class_counts": {
+      "train": {
+        "NORMAL": 1341,
+        "PNEUMONIA": 3875
+      },
+      "val": {
+        "NORMAL": 8,
+        "PNEUMONIA": 8
+      },
+      "test": {
+        "NORMAL": 234,
+        "PNEUMONIA": 390
+      }
+    },
+    "dimension_stats": {
+      "mean_height": 1086.0048076923076,
+      "mean_width": 1446.6274038461538,
+      "std_height": 444.3710767174659,
+      "std_width": 412.60952872096505,
+      "min_height": 127,
+      "max_height": 2663,
+      "min_width": 384,
+      "max_width": 2720
+    }
+  },
+  "preprocessing": {
+    "target_size": [
+      224,
+      224
+    ],
+    "clahe_clip_limit": 2.0,
+    "clahe_tile_grid": [
+      8,
+      8
+    ],
+    "segment_lungs": false,
+    "normalize": true
+  }
+}
