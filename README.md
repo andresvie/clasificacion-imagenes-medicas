@@ -44,11 +44,26 @@ pip install -r requirements.txt
 
 ## Dataset
 
-Descargar el dataset de Kaggle y colocarlo en `data/chest_xray/`:
+Descargar el dataset de Kaggle y colocarlo en `data/chest-xray-pneumonia/`:
 
 ```bash
+cd data/
 kaggle datasets download -d paultimothymooney/chest-xray-pneumonia
 unzip chest-xray-pneumonia.zip -d data/
+```
+
+La estructura esperada del dataset es:
+```
+data/chest-xray-pneumonia/chest_xray/
+├── train/
+│   ├── NORMAL/
+│   └── PNEUMONIA/
+├── val/
+│   ├── NORMAL/
+│   └── PNEUMONIA/
+└── test/
+    ├── NORMAL/
+    └── PNEUMONIA/
 ```
 
 ## Uso
@@ -56,46 +71,84 @@ unzip chest-xray-pneumonia.zip -d data/
 ### Ejecutar el pipeline completo
 
 ```bash
-python src/classification_pipeline.py
+python src/classification_pipeline.py --data_root ./data/chest-xray-pneumonia/chest_xray
 ```
+
+Opciones disponibles:
+- `--data_root`: Ruta al dataset (default: `./data/chest-xray-pneumonia/chest_xray`)
+- `--results_dir`: Directorio para guardar resultados (default: `./results`)
+- `--max_samples`: Máximo de muestras por clase (default: 0 = sin límite)
 
 ### Ejecutar notebooks
 
 ```bash
 jupyter notebook notebooks/
+# O usar JupyterLab
+jupyter lab
 ```
 
 ### Ejecutar tests
 
 ```bash
+# Ejecutar todos los tests
 pytest tests/
+
+# Ejecutar con cobertura
+pytest --cov=src --cov-report=html tests/
 ```
+
+## Módulos del Proyecto
+
+El código fuente está organizado en los siguientes módulos en `src/`:
+
+| Módulo | Descripción |
+|--------|-------------|
+| `data_loader.py` | Carga y gestión del dataset de radiografías |
+| `preprocessing.py` | Preprocesamiento de imágenes (redimensionado, CLAHE, normalización) |
+| `feature_extraction.py` | Extracción de características (intensidad, textura, forma) |
+| `texture_descriptors.py` | Descriptores de textura (GLCM, LBP, Gabor, estadísticas de primer orden) |
+| `shape_descriptors.py` | Descriptores de forma (HOG, momentos de Hu, contornos, Fourier) |
+| `classification_pipeline.py` | Pipeline completo de clasificación |
+| `utils.py` | Utilidades (carga/guardado de imágenes, visualizaciones) |
 
 ## Notebooks
 
 | Notebook | Descripción |
 |----------|-------------|
-| `01_exploratory_analysis.ipynb` | Análisis exploratorio de datos |
-| `02_preprocessing.ipynb` | Pipeline de preprocesamiento |
-| `03_feature_extraction.ipynb` | Extracción de características |
-| `04_classification.ipynb` | Entrenamiento y evaluación de modelos |
+| `01_exploratory_and_preprocessing.ipynb` | Análisis exploratorio de datos y pipeline de preprocesamiento |
+| `02_feature_extraction.ipynb` | Extracción y análisis de características (textura y forma) |
+
+## Características Extraídas
+
+El pipeline extrae múltiples tipos de características:
+
+### Características de Intensidad
+- Estadísticas de primer orden (media, varianza, asimetría, curtosis, etc.)
+
+### Características de Textura
+- **GLCM** (Gray-Level Co-occurrence Matrix): Contraste, homogeneidad, energía, correlación
+- **LBP** (Local Binary Patterns): Patrones binarios locales
+- **Filtros de Gabor**: Respuestas a diferentes frecuencias y orientaciones
+- **Gradientes**: Magnitud y orientación de gradientes
+
+### Características de Forma
+- **HOG** (Histogram of Oriented Gradients)
+- **Momentos de Hu**: 7 momentos invariantes
+- **Descriptores de contorno**: Área, perímetro, circularidad, excentricidad
+- **Descriptores de Fourier**: Representación espectral de formas
 
 ## Resultados
 
 Los resultados se guardan en el directorio `results/`:
-- Figuras y visualizaciones
-- Métricas de evaluación
-- Modelos entrenados
+- **Figuras y visualizaciones**: Distribuciones, comparaciones, matrices de confusión
+- **Métricas de evaluación**: Accuracy, AUC-ROC, precision, recall, F1-score (en `metrics.json`)
+- **Descriptores extraídos**: Vectores de características guardados en formato NumPy
+- **Análisis de preprocesamiento**: Efectos de CLAHE y otras transformaciones
 
-## Tests
+## Modelos Implementados
 
-```bash
-# Ejecutar todos los tests
-pytest
-
-# Ejecutar con cobertura
-pytest --cov=src tests/
-```
+- **Random Forest**: Clasificador basado en árboles de decisión
+- **SVM** (Support Vector Machine): Clasificador con kernel RBF
 
 ## Autor
 
