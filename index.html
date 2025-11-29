@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Análisis Exploratorio y Preprocesamiento de Radiografías | Visión por Computador</title>
+    <title>Análisis Exploratorio, Preprocesamiento y Extracción de Descriptores | Visión por Computador</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
@@ -326,8 +326,8 @@
 <body>
     <div class="container">
         <header>
-            <h1 class="blog-title">Análisis Exploratorio y Preprocesamiento de Radiografías de Tórax</h1>
-            <p class="blog-subtitle">Pipeline de Preprocesamiento para Clasificación de Neumonía mediante Visión por Computador</p>
+            <h1 class="blog-title">Análisis Exploratorio, Preprocesamiento y Extracción de Descriptores</h1>
+            <p class="blog-subtitle">Pipeline Completo para Clasificación de Neumonía mediante Visión por Computador</p>
             <div class="blog-meta">
                 <span><i class="fas fa-calendar-alt"></i> Semestre 2025-02</span>
                 <span><i class="fas fa-tag"></i> Visión por Computador 3009228</span>
@@ -356,8 +356,8 @@
 
             <h3>1.2 Objetivos</h3>
             <p>
-                Este trabajo presenta un análisis exploratorio exhaustivo y un pipeline de preprocesamiento para radiografías 
-                de tórax, con los siguientes objetivos:
+                Este trabajo presenta un análisis exploratorio exhaustivo, un pipeline de preprocesamiento, y un sistema 
+                de extracción de descriptores clásicos para radiografías de tórax, con los siguientes objetivos:
             </p>
             <ul>
                 <li><strong>Análisis exploratorio:</strong> Caracterizar el dataset en términos de distribución de clases, 
@@ -366,8 +366,10 @@
                 para mejorar la visibilidad de estructuras pulmonares.</li>
                 <li><strong>Segmentación de ROI:</strong> Desarrollar un algoritmo para aislar la región de los pulmones, 
                 eliminando artefactos y estructuras no relevantes.</li>
-                <li><strong>Pipeline integrado:</strong> Diseñar un sistema de preprocesamiento completo y reproducible que 
-                prepare las imágenes para etapas posteriores de extracción de características y clasificación.</li>
+                <li><strong>Extracción de descriptores:</strong> Implementar descriptores clásicos de forma (HOG, Hu, Contorno, 
+                Fourier) y textura (LBP, GLCM, Gabor, Estadísticas) para caracterizar las imágenes.</li>
+                <li><strong>Pipeline integrado:</strong> Diseñar un sistema completo y reproducible que prepare las imágenes 
+                y extraiga características para etapas posteriores de clasificación.</li>
             </ul>
 
             <div class="info-box">
@@ -850,12 +852,344 @@
                 de optimización.</li>
             </ul>
 
+            <!-- Extracción de Descriptores -->
+            <h2>5. Extracción de Descriptores Clásicos</h2>
+            
+            <p>
+                La extracción de características es fundamental para la clasificación de imágenes médicas. En este trabajo se 
+                implementaron descriptores clásicos de visión por computador, divididos en dos categorías principales: 
+                <strong>descriptores de forma</strong> y <strong>descriptores de textura</strong>. Estos descriptores capturan 
+                diferentes aspectos de las imágenes que pueden ser discriminativos para distinguir entre casos normales y casos 
+                con neumonía.
+            </p>
+
+            <h3>5.1 Descriptores de Forma</h3>
+            
+            <p>
+                Los descriptores de forma capturan características geométricas y estructurales de las imágenes. Se implementaron 
+                cuatro tipos de descriptores de forma:
+            </p>
+
+            <h4>5.1.1 Histogram of Oriented Gradients (HOG)</h4>
+            <p>
+                HOG captura la distribución de direcciones de gradientes locales en la imagen. El algoritmo divide la imagen 
+                en celdas, calcula gradientes en cada píxel, crea histogramas de orientaciones por celda, y normaliza por 
+                bloques para lograr invarianza a iluminación.
+            </p>
+
+            <div class="image-container">
+                <img src="results/descriptors/hog_visualization.png" alt="Visualización HOG">
+                <p class="image-caption">
+                    Figura 11: Visualización de descriptores HOG para casos NORMAL y PNEUMONIA. La visualización muestra la 
+                    distribución de gradientes orientados, capturando la estructura espacial de las imágenes.
+                </p>
+            </div>
+
+            <div class="image-container">
+                <img src="results/descriptors/hog_cell_sizes.png" alt="Efecto del tamaño de celda en HOG">
+                <p class="image-caption">
+                    Figura 12: Efecto del tamaño de celda en HOG. Celdas más pequeñas capturan más detalle pero generan más 
+                    características. Se seleccionó un tamaño de (8, 8) píxeles como balance óptimo.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <h4><i class="fas fa-cog"></i> Configuración HOG</h4>
+                <p>
+                    <strong>Parámetros seleccionados:</strong><br>
+                    • <strong>orientations:</strong> 9 (20° por bin)<br>
+                    • <strong>pixels_per_cell:</strong> (8, 8)<br>
+                    • <strong>cells_per_block:</strong> (2, 2)<br>
+                    • <strong>Features extraídos:</strong> 9 estadísticas (mean, std, min, max, median, q25, q75, skewness, kurtosis)
+                </p>
+            </div>
+
+            <h4>5.1.2 Momentos de Hu</h4>
+            <p>
+                Los 7 momentos de Hu son invariantes a rotación, escala y traslación, lo que los hace ideales para caracterizar 
+                formas independientemente de su posición y orientación. Estos momentos capturan propiedades geométricas fundamentales 
+                de la distribución de intensidades.
+            </p>
+
+            <div class="image-container">
+                <img src="results/descriptors/hu_moments_distribution.png" alt="Distribución de momentos de Hu">
+                <p class="image-caption">
+                    Figura 13: Distribución de los 7 momentos de Hu para múltiples muestras de ambas clases. Los momentos muestran 
+                    diferencias sutiles entre clases que pueden ser discriminativos para la clasificación.
+                </p>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Momento</th>
+                            <th>Descripción</th>
+                            <th>Invarianza</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>h1</strong></td>
+                            <td>Momento de inercia</td>
+                            <td>Rotación, escala, traslación</td>
+                        </tr>
+                        <tr>
+                            <td><strong>h2</strong></td>
+                            <td>Elongación de la forma</td>
+                            <td>Rotación, escala, traslación</td>
+                        </tr>
+                        <tr>
+                            <td><strong>h3-h6</strong></td>
+                            <td>Momentos de orden superior</td>
+                            <td>Rotación, escala, traslación</td>
+                        </tr>
+                        <tr>
+                            <td><strong>h7</strong></td>
+                            <td>Distingue formas especulares</td>
+                            <td>Cambia signo con reflexión</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>5.1.3 Descriptores de Contorno</h4>
+            <p>
+                Los descriptores de contorno caracterizan la forma de las regiones segmentadas mediante métricas geométricas:
+            </p>
+            <ul>
+                <li><strong>Área:</strong> Número de píxeles dentro del contorno</li>
+                <li><strong>Perímetro:</strong> Longitud del contorno</li>
+                <li><strong>Circularidad:</strong> 4π × área / perímetro² (círculo = 1)</li>
+                <li><strong>Excentricidad:</strong> Elongación de la forma (0 = círculo)</li>
+                <li><strong>Solidez:</strong> Área / Área convexa</li>
+            </ul>
+
+            <div class="image-container">
+                <img src="results/descriptors/contour_analysis.png" alt="Análisis de contornos">
+                <p class="image-caption">
+                    Figura 14: Análisis de contornos detectados en imágenes preprocesadas. Los contornos principales se identifican 
+                    y se caracterizan mediante métricas geométricas que capturan la forma de las regiones pulmonares.
+                </p>
+            </div>
+
+            <h4>5.1.4 Descriptores de Fourier</h4>
+            <p>
+                Los descriptores de Fourier representan la forma del contorno en el dominio de frecuencia. Los coeficientes de 
+                baja frecuencia capturan la forma general, mientras que los de alta frecuencia capturan detalles finos. Esta 
+                representación es compacta e invariante a traslación (ignorando F[0]) y escala (normalizando por |F[1]|).
+            </p>
+
+            <div class="image-container">
+                <img src="results/descriptors/fourier_descriptors.png" alt="Descriptores de Fourier">
+                <p class="image-caption">
+                    Figura 15: Descriptores de Fourier del contorno. Se muestran las magnitudes de los primeros 20 coeficientes, 
+                    el decaimiento de energía, y métricas agregadas que resumen la forma en el dominio de frecuencia.
+                </p>
+            </div>
+
+            <h3>5.2 Descriptores de Textura</h3>
+            
+            <p>
+                Los descriptores de textura capturan patrones locales y distribuciones de intensidad que son característicos 
+                de diferentes tipos de tejido pulmonar. Se implementaron cuatro tipos de descriptores de textura:
+            </p>
+
+            <h4>5.2.1 Local Binary Patterns (LBP)</h4>
+            <p>
+                LBP compara cada píxel con sus vecinos para crear un código binario que representa el patrón local de textura. 
+                Es robusto a variaciones de iluminación y captura micro-patrones que pueden ser discriminativos entre tejido 
+                normal y patológico.
+            </p>
+
+            <div class="image-container">
+                <img src="results/descriptors/lbp_visualization.png" alt="Visualización LBP">
+                <p class="image-caption">
+                    Figura 16: Visualización de Local Binary Patterns. La imagen LBP muestra los patrones locales de textura, 
+                    y el histograma representa la distribución de estos patrones, que es característica de cada clase.
+                </p>
+            </div>
+
+            <div class="image-container">
+                <img src="results/descriptors/lbp_radii.png" alt="Efecto del radio en LBP">
+                <p class="image-caption">
+                    Figura 17: Efecto del radio en LBP. Radios mayores capturan patrones a mayor escala. Se seleccionó un radio 
+                    de 3 con 24 puntos de muestreo para balancear detalle y robustez.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <h4><i class="fas fa-cog"></i> Configuración LBP</h4>
+                <p>
+                    <strong>Parámetros seleccionados:</strong><br>
+                    • <strong>radius:</strong> 3<br>
+                    • <strong>n_points:</strong> 24<br>
+                    • <strong>method:</strong> 'uniform' (reduce bins a 10)<br>
+                    • <strong>Features extraídos:</strong> 13 (10 bins + mean, std, entropy)
+                </p>
+            </div>
+
+            <h4>5.2.2 Gray Level Co-occurrence Matrix (GLCM)</h4>
+            <p>
+                GLCM cuenta la frecuencia de pares de píxeles con valores específicos a una distancia y dirección dadas. 
+                Las propiedades derivadas de GLCM capturan características de textura como contraste, correlación, energía 
+                y homogeneidad.
+            </p>
+
+            <div class="image-container">
+                <img src="results/descriptors/glcm_matrices.png" alt="Matrices GLCM">
+                <p class="image-caption">
+                    Figura 18: Matrices GLCM calculadas en cuatro direcciones (0°, 45°, 90°, 135°) para casos NORMAL y PNEUMONIA. 
+                    Las matrices muestran la distribución de co-ocurrencias de niveles de gris, que es característica de cada clase.
+                </p>
+            </div>
+
+            <div class="image-container">
+                <img src="results/descriptors/glcm_properties_distribution.png" alt="Distribución de propiedades GLCM">
+                <p class="image-caption">
+                    Figura 19: Distribución de propiedades GLCM (contraste, correlación, energía, homogeneidad) para múltiples 
+                    muestras. Las diferencias en estas propiedades pueden ser discriminativas para la clasificación.
+                </p>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Propiedad</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Contraste</strong></td>
+                            <td>Variación local de intensidad</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Correlación</strong></td>
+                            <td>Dependencia lineal entre píxeles</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Energía</strong></td>
+                            <td>Uniformidad (suma de cuadrados)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Homogeneidad</strong></td>
+                            <td>Cercanía a la diagonal</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>5.2.3 Filtros de Gabor</h4>
+            <p>
+                Los filtros de Gabor son sinusoides moduladas por una gaussiana, sensibles a frecuencia espacial y orientación. 
+                Un banco de filtros con múltiples frecuencias y orientaciones captura texturas a diferentes escalas y direcciones, 
+                simulando la respuesta de células simples en la corteza visual.
+            </p>
+
+            <div class="image-container">
+                <img src="results/descriptors/gabor_responses_normal.png" alt="Respuestas de filtros de Gabor">
+                <p class="image-caption">
+                    Figura 20: Respuestas de un banco de 16 filtros de Gabor (4 frecuencias × 4 orientaciones) aplicado a una 
+                    imagen NORMAL. Cada filtro responde a patrones de textura en una escala y orientación específicas.
+                </p>
+            </div>
+
+            <div class="image-container">
+                <img src="results/descriptors/gabor_comparison.png" alt="Comparación de respuestas Gabor">
+                <p class="image-caption">
+                    Figura 21: Comparación de respuestas Gabor entre clases para frecuencia f=0.2. Las diferencias en las respuestas 
+                    reflejan variaciones en los patrones de textura entre tejido normal y patológico.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <h4><i class="fas fa-cog"></i> Configuración Gabor</h4>
+                <p>
+                    <strong>Parámetros seleccionados:</strong><br>
+                    • <strong>frequencies:</strong> [0.1, 0.2, 0.3, 0.4]<br>
+                    • <strong>orientations:</strong> [0, π/4, π/2, 3π/4]<br>
+                    • <strong>Total de filtros:</strong> 16<br>
+                    • <strong>Features extraídos:</strong> Estadísticas (mean, std, max, var) por filtro + agregados = 85 features
+                </p>
+            </div>
+
+            <h4>5.2.4 Estadísticas de Primer Orden</h4>
+            <p>
+                Las estadísticas de primer orden caracterizan la distribución de intensidades de píxeles sin considerar relaciones 
+                espaciales. Estas métricas incluyen:
+            </p>
+            <ul>
+                <li><strong>Media y varianza:</strong> Nivel de brillo y contraste global</li>
+                <li><strong>Skewness:</strong> Asimetría de la distribución</li>
+                <li><strong>Kurtosis:</strong> Peso de las colas de la distribución</li>
+                <li><strong>Entropía:</strong> Complejidad de la textura</li>
+                <li><strong>Energía:</strong> Suma de cuadrados de valores normalizados</li>
+            </ul>
+
+            <div class="image-container">
+                <img src="results/descriptors/first_order_stats.png" alt="Estadísticas de primer orden">
+                <p class="image-caption">
+                    Figura 22: Distribución de estadísticas de primer orden para múltiples muestras. Estas métricas capturan 
+                    propiedades globales de la distribución de intensidades que pueden diferir entre clases.
+                </p>
+            </div>
+
+            <h3>5.3 Resumen de Características Extraídas</h3>
+            
+            <p>
+                Se procesaron 200 muestras (100 por clase) del conjunto de entrenamiento, extrayendo un total de 
+                <strong>179 características</strong> por imagen:
+            </p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th>Número de Features</th>
+                            <th>Descriptores Incluidos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Forma</strong></td>
+                            <td>47</td>
+                            <td>HOG (9), Hu (7), Contorno (8), Fourier (23)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Textura</strong></td>
+                            <td>132</td>
+                            <td>LBP (13), GLCM (40), Gabor (85), Estadísticas (10)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td><strong>179</strong></td>
+                            <td>Combinación de todos los descriptores</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-box">
+                <h4><i class="fas fa-database"></i> Datos Preparados para Clasificación</h4>
+                <p>
+                    Los features extraídos se guardaron en formato NumPy para su uso en clasificación:<br>
+                    • <strong>X_shape.npy:</strong> 200 muestras × 47 características de forma<br>
+                    • <strong>X_texture.npy:</strong> 200 muestras × 132 características de textura<br>
+                    • <strong>X_combined.npy:</strong> 200 muestras × 179 características combinadas<br>
+                    • <strong>y_labels.npy:</strong> Etiquetas (0=NORMAL, 1=PNEUMONIA)
+                </p>
+            </div>
+
+
             <!-- Análisis y Discusión -->
-            <h2>5. Análisis y Discusión</h2>
+            <h2>6. Análisis y Discusión</h2>
             
-            <h3>5.1 Desafíos Identificados</h3>
+            <h3>6.1 Desafíos Identificados</h3>
             
-            <h4>5.1.1 Desbalance de Clases</h4>
+            <h4>6.1.1 Desbalance de Clases</h4>
             <p>
                 El desbalance significativo en el conjunto de entrenamiento (ratio 2.89:1) puede sesgar el modelo hacia la 
                 clase mayoritaria (PNEUMONIA). Para mitigar este problema, se recomienda:
@@ -870,7 +1204,7 @@
                 accuracy simple.</li>
             </ul>
 
-            <h4>5.1.2 Conjunto de Validación Pequeño</h4>
+            <h4>6.1.2 Conjunto de Validación Pequeño</h4>
             <p>
                 El conjunto de validación con solo 16 imágenes es insuficiente para evaluaciones confiables. Se recomienda:
             </p>
@@ -880,7 +1214,7 @@
                 <li><strong>Validación cruzada:</strong> Implementar k-fold cross-validation para evaluaciones más robustas.</li>
             </ul>
 
-            <h4>5.1.3 Variabilidad en Dimensiones</h4>
+            <h4>6.1.3 Variabilidad en Dimensiones</h4>
             <p>
                 La alta variabilidad en dimensiones (desviación estándar de ~400 píxeles) justifica la normalización. Sin 
                 embargo, el redimensionamiento puede introducir distorsiones. Consideraciones:
@@ -892,9 +1226,9 @@
                 minimizar pérdida de información.</li>
             </ul>
 
-            <h3>5.2 Decisiones de Diseño</h3>
+            <h3>6.2 Decisiones de Diseño</h3>
             
-            <h4>5.2.1 Selección de CLAHE sobre Ecualización Global</h4>
+            <h4>6.2.1 Selección de CLAHE sobre Ecualización Global</h4>
             <p>
                 CLAHE fue seleccionado sobre ecualización global porque:
             </p>
@@ -905,7 +1239,7 @@
                 <li>Produce resultados visualmente superiores en comparación directa</li>
             </ul>
 
-            <h4>5.2.2 Segmentación como Paso Opcional</h4>
+            <h4>6.2.2 Segmentación como Paso Opcional</h4>
             <p>
                 La segmentación se implementa como opcional porque:
             </p>
@@ -915,9 +1249,9 @@
                 <li>Algunos modelos pueden beneficiarse de información contextual fuera de los pulmones</li>
             </ul>
 
-            <h3>5.3 Limitaciones y Mejoras Futuras</h3>
+            <h3>6.3 Limitaciones y Mejoras Futuras</h3>
             
-            <h4>5.3.1 Limitaciones Actuales</h4>
+            <h4>6.3.1 Limitaciones Actuales</h4>
             <ul>
                 <li><strong>Segmentación básica:</strong> El algoritmo actual puede fallar en casos complejos. Técnicas más 
                 avanzadas como U-Net o modelos de segmentación profunda podrían mejorar la robustez.</li>
@@ -927,7 +1261,7 @@
                 marcas de placa o sombras.</li>
             </ul>
 
-            <h4>5.3.2 Mejoras Propuestas</h4>
+            <h4>6.3.2 Mejoras Propuestas</h4>
             <ul>
                 <li><strong>Augmentación de datos:</strong> Implementar rotaciones, traslaciones, y variaciones de contraste 
                 para aumentar la robustez del modelo.</li>
@@ -939,11 +1273,11 @@
             </ul>
 
             <!-- Conclusiones -->
-            <h2>6. Conclusiones</h2>
+            <h2>7. Conclusiones</h2>
             
             <p>
-                Este trabajo presenta un análisis exploratorio exhaustivo y un pipeline de preprocesamiento completo para 
-                radiografías de tórax. Las principales conclusiones son:
+                Este trabajo presenta un análisis exploratorio exhaustivo, un pipeline de preprocesamiento completo, y un 
+                sistema de extracción de descriptores clásicos para radiografías de tórax. Las principales conclusiones son:
             </p>
 
             <ol>
@@ -965,20 +1299,27 @@
                     y reproducible, facilitando experimentación y comparación de técnicas.
                 </li>
                 <li>
-                    <strong>Preparación para clasificación:</strong> El preprocesamiento prepara adecuadamente las imágenes 
-                    para etapas posteriores de extracción de características y clasificación, con normalización dimensional 
-                    y mejora de contraste.
+                    <strong>Extracción de descriptores completa:</strong> Se implementaron 8 tipos de descriptores (4 de forma 
+                    y 4 de textura), extrayendo un total de 179 características por imagen que capturan diferentes aspectos 
+                    discriminativos entre clases.
+                </li>
+                <li>
+                    <strong>Preparación para clasificación:</strong> El pipeline completo (preprocesamiento + extracción de 
+                    características) prepara adecuadamente las imágenes para clasificación, con features normalizados y 
+                    guardados en formato NumPy para su uso en modelos de machine learning.
                 </li>
             </ol>
 
             <p>
-                El pipeline desarrollado proporciona una base sólida para la implementación de sistemas de clasificación 
-                automatizada de neumonía, con potencial para asistir a profesionales de la salud en el diagnóstico temprano 
-                y preciso de esta condición.
+                El pipeline desarrollado (preprocesamiento + extracción de descriptores) proporciona una base sólida para la 
+                implementación de sistemas de clasificación automatizada de neumonía. Los 179 descriptores extraídos capturan 
+                información complementaria de forma y textura que puede ser utilizada por algoritmos de machine learning 
+                tradicionales (SVM, Random Forest) o como features adicionales en modelos de deep learning. Este sistema tiene 
+                potencial para asistir a profesionales de la salud en el diagnóstico temprano y preciso de esta condición.
             </p>
 
             <!-- Referencias -->
-            <h2>7. Referencias</h2>
+            <h2>8. Referencias</h2>
             
             <ol>
                 <li>
@@ -1005,6 +1346,28 @@
                 <li>
                     Simonyan, K., & Zisserman, A. (2014). <em>Very deep convolutional networks for large-scale 
                     image recognition</em>. arXiv preprint arXiv:1409.1556.
+                </li>
+                <li>
+                    Dalal, N., & Triggs, B. (2005). <em>Histograms of oriented gradients for human detection</em>. 
+                    Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 886-893.
+                </li>
+                <li>
+                    Hu, M. K. (1962). <em>Visual pattern recognition by moment invariants</em>. IRE Transactions 
+                    on Information Theory, 8(2), 179-187.
+                </li>
+                <li>
+                    Ojala, T., Pietikainen, M., & Maenpaa, T. (2002). <em>Multiresolution gray-scale and rotation 
+                    invariant texture classification with local binary patterns</em>. IEEE Transactions on Pattern 
+                    Analysis and Machine Intelligence, 24(7), 971-987.
+                </li>
+                <li>
+                    Haralick, R. M., Shanmugam, K., & Dinstein, I. (1973). <em>Textural features for image 
+                    classification</em>. IEEE Transactions on Systems, Man, and Cybernetics, SMC-3(6), 610-621.
+                </li>
+                <li>
+                    Daugman, J. G. (1985). <em>Uncertainty relation for resolution in space, spatial frequency, and 
+                    orientation optimized by two-dimensional visual cortical filters</em>. Journal of the Optical 
+                    Society of America A, 2(7), 1160-1169.
                 </li>
             </ol>
 

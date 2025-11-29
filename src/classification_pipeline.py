@@ -2,13 +2,12 @@
 Script principal para ejecutar el pipeline completo de clasificación de neumonía.
 
 Uso:
-    python src/main.py --data_root ./data/chest_xray
+    python src/classification_pipeline.py --data_root ./data/chest_xray
 """
 
 import argparse
 import numpy as np
 from pathlib import Path
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
@@ -18,7 +17,7 @@ from tqdm import tqdm
 from data_loader import DataLoader
 from preprocessing import XRayPreprocessor
 from feature_extraction import FeatureExtractor
-from utils import save_results, plot_confusion_matrix, plot_roc_curve
+from utils import save_results, plot_confusion_matrix
 
 
 def main(args):

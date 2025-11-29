@@ -56,7 +56,7 @@ unzip chest-xray-pneumonia.zip -d data/
 ### Ejecutar el pipeline completo
 
 ```bash
-python src/main.py
+python src/classification_pipeline.py
 ```
 
 ### Ejecutar notebooks
