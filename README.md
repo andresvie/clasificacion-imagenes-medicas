@@ -13,7 +13,7 @@ Este proyecto implementa un pipeline de reconocimiento de patrones para la clasi
 ## Estructura del Proyecto
 
 ```
-pneumonia_project/
+clasificacion-imagenes-medicas/
 ├── data/                    # Datos y scripts de descarga
 ├── notebooks/               # Jupyter notebooks con análisis
 ├── results/                 # Resultados, figuras y métricas
@@ -31,7 +31,7 @@ pneumonia_project/
 ```bash
 # Clonar el repositorio
 git clone <repo-url>
-cd pneumonia_project
+cd clasificacion-imagenes-medicas
 
 # Crear entorno virtual
 python -m venv venv
