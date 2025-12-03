@@ -1183,13 +1183,287 @@
                 </p>
             </div>
 
+            <!-- Clasificación -->
+            <h2>6. Clasificación con Descriptores Clásicos</h2>
+            
+            <p>
+                Una vez extraídos los descriptores de forma y textura, se procedió a entrenar y evaluar múltiples modelos de 
+                clasificación utilizando técnicas de machine learning tradicionales. El objetivo fue determinar qué algoritmos 
+                son más efectivos para distinguir entre radiografías normales y casos de neumonía basándose en las características 
+                extraídas.
+            </p>
+
+            <h3>6.1 Pipeline de Clasificación</h3>
+            
+            <p>
+                El pipeline de clasificación implementado sigue una secuencia estándar de preprocesamiento y modelado:
+            </p>
+
+            <div class="flow-diagram">
+                <h4>Pipeline de Clasificación</h4>
+                <div class="flow-step">
+                    <h5>1. Extracción de Features</h5>
+                    <p>Extracción de 34 descriptores básicos por imagen: histograma normalizado (32 bins), bordes Canny (promedio), y varianza como descriptor de textura.</p>
+                </div>
+                <div class="flow-step">
+                    <h5>2. Normalización</h5>
+                    <p>Estandarización de características mediante StandardScaler para centrar y escalar los datos, asegurando que todas las features tengan la misma escala.</p>
+                </div>
+                <div class="flow-step">
+                    <h5>3. Reducción de Dimensionalidad (PCA)</h5>
+                    <p>Aplicación de Análisis de Componentes Principales (PCA) conservando el 95% de la varianza, reduciendo de 34 a 15 componentes principales.</p>
+                </div>
+                <div class="flow-step">
+                    <h5>4. Balanceo de Clases (SMOTE)</h5>
+                    <p>Aplicación de SMOTE (Synthetic Minority Oversampling Technique) para balancear las clases, aumentando la clase minoritaria (NORMAL) de 1,583 a 4,273 muestras.</p>
+                </div>
+                <div class="flow-step">
+                    <h5>5. Entrenamiento y Validación</h5>
+                    <p>Entrenamiento de múltiples clasificadores con validación cruzada estratificada de 5 folds para evaluar el rendimiento de manera robusta.</p>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4><i class="fas fa-database"></i> Dataset de Clasificación</h4>
+                <p>
+                    <strong>Total de imágenes procesadas:</strong> 5,856<br>
+                    <strong>Features extraídos por imagen:</strong> 34 descriptores básicos<br>
+                    <strong>Features después de PCA:</strong> 15 componentes principales (95% varianza)<br>
+                    <strong>Distribución antes de SMOTE:</strong> NORMAL: 1,583 | PNEUMONIA: 4,273<br>
+                    <strong>Distribución después de SMOTE:</strong> NORMAL: 4,273 | PNEUMONIA: 4,273
+                </p>
+            </div>
+
+            <h3>6.2 Modelos Evaluados</h3>
+            
+            <p>
+                Se evaluaron cinco algoritmos de clasificación diferentes, cubriendo tanto métodos lineales como no lineales:
+            </p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Modelo</th>
+                            <th>Tipo</th>
+                            <th>Características Principales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>SVM con Kernel RBF</strong></td>
+                            <td>No lineal</td>
+                            <td>Máquinas de vectores de soporte con kernel gaussiano, efectivo para fronteras de decisión complejas</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SVM con Kernel Lineal</strong></td>
+                            <td>Lineal</td>
+                            <td>Máquinas de vectores de soporte con separación lineal, más rápido pero menos flexible</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Random Forest</strong></td>
+                            <td>Ensemble no lineal</td>
+                            <td>Combinación de múltiples árboles de decisión, robusto y capaz de capturar interacciones complejas</td>
+                        </tr>
+                        <tr>
+                            <td><strong>K-Nearest Neighbors (KNN)</strong></td>
+                            <td>No paramétrico</td>
+                            <td>Clasificación basada en proximidad en el espacio de características, k=5 vecinos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Regresión Logística</strong></td>
+                            <td>Lineal</td>
+                            <td>Modelo probabilístico lineal, interpretable y eficiente computacionalmente</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>6.3 Resultados de Clasificación</h3>
+            
+            <p>
+                Todos los modelos fueron evaluados mediante validación cruzada estratificada de 5 folds, asegurando una evaluación 
+                robusta y sin sesgo. Los resultados se presentan en términos de accuracy, precisión, recall, F1-score y AUC-ROC.
+            </p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Modelo</th>
+                            <th>Accuracy</th>
+                            <th>Precisión</th>
+                            <th>Recall</th>
+                            <th>F1-Score</th>
+                            <th>AUC-ROC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Random Forest</strong></td>
+                            <td><strong>92.70%</strong></td>
+                            <td><strong>94.84%</strong></td>
+                            <td><strong>90.31%</strong></td>
+                            <td><strong>92.52%</strong></td>
+                            <td><strong>0.975</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>SVM RBF</strong></td>
+                            <td>91.29%</td>
+                            <td>93.75%</td>
+                            <td>88.49%</td>
+                            <td>91.04%</td>
+                            <td>0.960</td>
+                        </tr>
+                        <tr>
+                            <td><strong>KNN</strong></td>
+                            <td>90.49%</td>
+                            <td>96.71%</td>
+                            <td>83.83%</td>
+                            <td>89.81%</td>
+                            <td>0.953</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SVM Lineal</strong></td>
+                            <td>86.03%</td>
+                            <td>89.36%</td>
+                            <td>81.79%</td>
+                            <td>85.41%</td>
+                            <td>0.916</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Regresión Logística</strong></td>
+                            <td>85.46%</td>
+                            <td>87.61%</td>
+                            <td>82.59%</td>
+                            <td>85.03%</td>
+                            <td>0.916</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="image-container">
+                <img src="results/confusion_matrix_rf.png" alt="Matriz de confusión Random Forest">
+                <p class="image-caption">
+                    Figura 23: Matriz de confusión para Random Forest, el modelo con mejor rendimiento. El modelo muestra 
+                    excelente capacidad para identificar correctamente ambas clases, con solo 210 falsos negativos y 414 falsos 
+                    positivos sobre 8,546 muestras.
+                </p>
+            </div>
+
+            <div class="image-container">
+                <img src="results/confusion_matrix_svm.png" alt="Matriz de confusión SVM RBF">
+                <p class="image-caption">
+                    Figura 24: Matriz de confusión para SVM con kernel RBF, el segundo mejor modelo. Aunque ligeramente inferior 
+                    a Random Forest, muestra un rendimiento sólido con 252 falsos negativos y 492 falsos positivos.
+                </p>
+            </div>
+
+            <h3>6.4 Análisis de Resultados</h3>
+            
+            <h4>6.4.1 Rendimiento por Tipo de Modelo</h4>
+            
+            <p>
+                Los resultados revelan diferencias significativas entre modelos lineales y no lineales:
+            </p>
+
+            <div class="info-box">
+                <h4><i class="fas fa-chart-line"></i> Modelos No Lineales vs Lineales</h4>
+                <p>
+                    <strong>Modelos no lineales (Random Forest, SVM RBF, KNN):</strong> Obtuvieron accuracy superior al 90%, 
+                    confirmando que la frontera de decisión entre clases normales y con neumonía no es estrictamente lineal. 
+                    Estos modelos capturan mejor la complejidad inherente a las imágenes médicas.<br><br>
+                    <strong>Modelos lineales (SVM Lineal, Regresión Logística):</strong> Alcanzaron accuracy alrededor del 85-86%, 
+                    lo cual es aceptable pero inferior a los modelos no lineales. Esto sugiere que las relaciones entre las 
+                    características extraídas requieren de capacidad de modelado no lineal.
+                </p>
+            </div>
+
+            <h4>6.4.2 Random Forest: Mejor Modelo</h4>
+            
+            <p>
+                Random Forest obtuvo el mejor rendimiento global con las siguientes características:
+            </p>
+            <ul>
+                <li><strong>Accuracy del 92.70%:</strong> La más alta entre todos los modelos evaluados</li>
+                <li><strong>AUC-ROC de 0.975:</strong> Excelente capacidad discriminativa, cercana a la perfección</li>
+                <li><strong>Balance entre precisión y recall:</strong> 94.84% de precisión y 90.31% de recall, indicando buen 
+                equilibrio entre falsos positivos y falsos negativos</li>
+                <li><strong>Robustez:</strong> Su naturaleza de ensemble lo hace menos propenso a sobreajuste y más estable</li>
+            </ul>
+
+            <p>
+                La superioridad de Random Forest puede atribuirse a su capacidad para:
+            </p>
+            <ul>
+                <li>Capturar interacciones complejas entre múltiples características</li>
+                <li>Manejar relaciones no lineales de manera natural</li>
+                <li>Ser robusto ante variabilidad dentro de cada clase</li>
+                <li>Proporcionar importancia de características, facilitando interpretabilidad</li>
+            </ul>
+
+            <h4>6.4.3 Impacto del Preprocesamiento</h4>
+            
+            <p>
+                El pipeline de preprocesamiento aplicado (normalización, PCA, SMOTE) demostró ser efectivo:
+            </p>
+            <ul>
+                <li><strong>Normalización (StandardScaler):</strong> Aseguró que todas las características tuvieran la misma escala, 
+                crítico para algoritmos sensibles a la magnitud de los valores (SVM, KNN).</li>
+                <li><strong>PCA (95% varianza):</strong> Redujo la dimensionalidad de 34 a 15 componentes, eliminando redundancia 
+                y ruido, mejorando la generalización y reduciendo el tiempo de entrenamiento.</li>
+                <li><strong>SMOTE:</strong> El balanceo de clases mejoró significativamente el rendimiento, especialmente en recall 
+                para la clase minoritaria (NORMAL), reduciendo el sesgo hacia la clase mayoritaria.</li>
+            </ul>
+
+            <h3>6.5 Conclusiones de la Clasificación</h3>
+            
+            <p>
+                El proceso completo de clasificación, desde la extracción de descriptores hasta la evaluación final, demuestra que:
+            </p>
+
+            <ol>
+                <li>
+                    <strong>Descriptores clásicos son efectivos:</strong> Los 34 descriptores básicos extraídos (histograma, bordes, 
+                    varianza) contienen información suficiente para discriminar entre radiografías normales y con neumonía con 
+                    accuracy superior al 92%.
+                </li>
+                <li>
+                    <strong>Modelos no lineales superan a lineales:</strong> La naturaleza compleja de las imágenes médicas requiere 
+                    de capacidad de modelado no lineal. Random Forest y SVM RBF superaron consistentemente a los modelos lineales.
+                </li>
+                <li>
+                    <strong>Random Forest es óptimo para este problema:</strong> Con 92.70% de accuracy y AUC-ROC de 0.975, 
+                    Random Forest demuestra ser el modelo más adecuado, combinando alto rendimiento con robustez y capacidad de 
+                    interpretación.
+                </li>
+                <li>
+                    <strong>El preprocesamiento es crucial:</strong> La normalización, reducción de dimensionalidad y balanceo de 
+                    clases fueron pasos esenciales que mejoraron significativamente el rendimiento de todos los modelos.
+                </li>
+                <li>
+                    <strong>El modelo es confiable para asistencia diagnóstica:</strong> Con métricas superiores al 90% en accuracy 
+                    y AUC-ROC cercano a 0.97, el sistema desarrollado tiene potencial para asistir a profesionales de la salud en 
+                    el diagnóstico de neumonía mediante radiografías de tórax.
+                </li>
+            </ol>
+
+            <div class="info-box">
+                <h4><i class="fas fa-check-circle"></i> Validación Robusta</h4>
+                <p>
+                    Todos los resultados fueron obtenidos mediante <strong>validación cruzada estratificada de 5 folds</strong>, 
+                    asegurando que las métricas reportadas sean representativas del rendimiento real del modelo y no estén sesgadas 
+                    por una partición específica de los datos. Esta metodología proporciona una evaluación confiable y reproducible.
+                </p>
+            </div>
 
             <!-- Análisis y Discusión -->
-            <h2>6. Análisis y Discusión</h2>
+            <h2>7. Análisis y Discusión</h2>
             
-            <h3>6.1 Desafíos Identificados</h3>
+            <h3>7.1 Desafíos Identificados</h3>
             
-            <h4>6.1.1 Desbalance de Clases</h4>
+            <h4>7.1.1 Desbalance de Clases</h4>
             <p>
                 El desbalance significativo en el conjunto de entrenamiento (ratio 2.89:1) puede sesgar el modelo hacia la 
                 clase mayoritaria (PNEUMONIA). Para mitigar este problema, se recomienda:
@@ -1204,7 +1478,7 @@
                 accuracy simple.</li>
             </ul>
 
-            <h4>6.1.2 Conjunto de Validación Pequeño</h4>
+            <h4>7.1.2 Conjunto de Validación Pequeño</h4>
             <p>
                 El conjunto de validación con solo 16 imágenes es insuficiente para evaluaciones confiables. Se recomienda:
             </p>
@@ -1214,7 +1488,7 @@
                 <li><strong>Validación cruzada:</strong> Implementar k-fold cross-validation para evaluaciones más robustas.</li>
             </ul>
 
-            <h4>6.1.3 Variabilidad en Dimensiones</h4>
+            <h4>7.1.3 Variabilidad en Dimensiones</h4>
             <p>
                 La alta variabilidad en dimensiones (desviación estándar de ~400 píxeles) justifica la normalización. Sin 
                 embargo, el redimensionamiento puede introducir distorsiones. Consideraciones:
@@ -1226,9 +1500,9 @@
                 minimizar pérdida de información.</li>
             </ul>
 
-            <h3>6.2 Decisiones de Diseño</h3>
+            <h3>7.2 Decisiones de Diseño</h3>
             
-            <h4>6.2.1 Selección de CLAHE sobre Ecualización Global</h4>
+            <h4>7.2.1 Selección de CLAHE sobre Ecualización Global</h4>
             <p>
                 CLAHE fue seleccionado sobre ecualización global porque:
             </p>
@@ -1239,7 +1513,7 @@
                 <li>Produce resultados visualmente superiores en comparación directa</li>
             </ul>
 
-            <h4>6.2.2 Segmentación como Paso Opcional</h4>
+            <h4>7.2.2 Segmentación como Paso Opcional</h4>
             <p>
                 La segmentación se implementa como opcional porque:
             </p>
@@ -1249,9 +1523,9 @@
                 <li>Algunos modelos pueden beneficiarse de información contextual fuera de los pulmones</li>
             </ul>
 
-            <h3>6.3 Limitaciones y Mejoras Futuras</h3>
+            <h3>7.3 Limitaciones y Mejoras Futuras</h3>
             
-            <h4>6.3.1 Limitaciones Actuales</h4>
+            <h4>7.3.1 Limitaciones Actuales</h4>
             <ul>
                 <li><strong>Segmentación básica:</strong> El algoritmo actual puede fallar en casos complejos. Técnicas más 
                 avanzadas como U-Net o modelos de segmentación profunda podrían mejorar la robustez.</li>
@@ -1261,7 +1535,7 @@
                 marcas de placa o sombras.</li>
             </ul>
 
-            <h4>6.3.2 Mejoras Propuestas</h4>
+            <h4>7.3.2 Mejoras Propuestas</h4>
             <ul>
                 <li><strong>Augmentación de datos:</strong> Implementar rotaciones, traslaciones, y variaciones de contraste 
                 para aumentar la robustez del modelo.</li>
@@ -1273,7 +1547,7 @@
             </ul>
 
             <!-- Conclusiones -->
-            <h2>7. Conclusiones</h2>
+            <h2>8. Conclusiones</h2>
             
             <p>
                 Este trabajo presenta un análisis exploratorio exhaustivo, un pipeline de preprocesamiento completo, y un 
@@ -1319,7 +1593,7 @@
             </p>
 
             <!-- Referencias -->
-            <h2>8. Referencias</h2>
+            <h2>9. Referencias</h2>
             
             <ol>
                 <li>
@@ -1371,6 +1645,105 @@
                 </li>
             </ol>
 
+            <!-- Análisis de Contribución Individual y Documentación -->
+            <h2>10. Análisis de Contribución Individual y Documentación</h2>
+            
+            <h3>10.1 Análisis de Contribución Individual</h3>
+            
+            <p>
+                Este proyecto fue desarrollado en equipo. A continuación se detalla la contribución de cada integrante:
+            </p>
+
+            <h4>10.1.1 Parte 1: Análisis Exploratorio y Preprocesamiento</h4>
+            
+            <div class="info-box">
+                <h4><i class="fas fa-user"></i> Contribuidor</h4>
+                <p>
+                    <strong>Carlos Andrés Viera Mosquera</strong><br>
+                    <i class="fas fa-envelope"></i> cviera@unal.edu.co
+                </p>
+            </div>
+
+            <p>
+                Desarrollo completo del análisis exploratorio de datos y pipeline de preprocesamiento, incluyendo:
+            </p>
+            <ul>
+                <li>Análisis de distribución de clases y caracterización del dataset</li>
+                <li>Análisis de dimensiones e intensidades de las imágenes</li>
+                <li>Implementación y evaluación de técnicas de mejora de contraste (CLAHE)</li>
+                <li>Desarrollo del algoritmo de segmentación de región de interés (pulmones)</li>
+                <li>Diseño e implementación del pipeline completo de preprocesamiento</li>
+                <li>Creación del notebook <code>01_exploratory_and_preprocessing.ipynb</code> con documentación y visualizaciones</li>
+                <li>Análisis sistemático de parámetros de CLAHE (clipLimit, tileGridSize)</li>
+                <li>Visualización de resultados y comparación de técnicas de preprocesamiento</li>
+            </ul>
+
+            <h4>10.1.2 Parte 2: Extracción de Descriptores</h4>
+            
+            <div class="info-box">
+                <h4><i class="fas fa-users"></i> Contribuidores</h4>
+                <p>
+                    <strong>Yenifer Tatiana Guavita Ospino</strong><br>
+                    <i class="fas fa-envelope"></i> yguavita@unal.edu.co<br><br>
+                    <strong>Yojan Tamayo Montoya</strong><br>
+                    <i class="fas fa-envelope"></i> ytamayom@unal.edu.co
+                </p>
+            </div>
+
+            <p>
+                Desarrollo conjunto de la extracción de descriptores clásicos de forma y textura, incluyendo:
+            </p>
+            <ul>
+                <li>Implementación de descriptores de forma: HOG, momentos de Hu, descriptores de contorno y Fourier</li>
+                <li>Implementación de descriptores de textura: LBP, GLCM, filtros de Gabor y estadísticas de primer orden</li>
+                <li>Análisis comparativo de diferentes configuraciones de parámetros para cada descriptor</li>
+                <li>Extracción de 179 características por imagen (47 de forma + 132 de textura)</li>
+                <li>Visualización y análisis de la distribución de descriptores entre clases</li>
+                <li>Creación del notebook <code>02_feature_extraction.ipynb</code> con análisis y resultados</li>
+                <li>Preparación de matrices de características para clasificación (formato NumPy)</li>
+            </ul>
+
+            <h4>10.1.3 Parte 3: Clasificación y Evaluación</h4>
+            
+            <div class="info-box">
+                <h4><i class="fas fa-user"></i> Contribuidor</h4>
+                <p>
+                    <strong>Lina María Montoya Zuluaga</strong><br>
+                    <i class="fas fa-envelope"></i> limontoyaz@unal.edu.co
+                </p>
+            </div>
+
+            <p>
+                Desarrollo completo del pipeline de clasificación y evaluación de modelos, incluyendo:
+            </p>
+            <ul>
+                <li>Implementación del pipeline de clasificación con normalización y reducción de dimensionalidad (PCA)</li>
+                <li>Aplicación de técnicas de balanceo de clases (SMOTE)</li>
+                <li>Entrenamiento y evaluación de múltiples modelos de clasificación (Random Forest, SVM, KNN, Regresión Logística)</li>
+                <li>Evaluación mediante validación cruzada estratificada de 5 folds</li>
+                <li>Análisis comparativo de rendimiento entre modelos lineales y no lineales</li>
+                <li>Generación de matrices de confusión y métricas de evaluación (accuracy, precisión, recall, F1-score, AUC-ROC)</li>
+                <li>Creación del notebook <code>03_classification.ipynb</code> con análisis y resultados</li>
+                <li>Análisis de impacto del preprocesamiento en el rendimiento de clasificación</li>
+            </ul>
+
+            <div class="info-box">
+                <h4><i class="fas fa-handshake"></i> Trabajo Colaborativo</h4>
+                <p>
+                    Aunque cada parte fue desarrollada por diferentes integrantes, el proyecto se benefició de la colaboración 
+                    entre todos los miembros del equipo en la revisión de código, discusión de resultados y mejora continua del 
+                    pipeline completo. La integración de las tres partes resultó en un sistema completo y funcional para la 
+                    clasificación de neumonía en radiografías de tórax.
+                </p>
+            </div>
+
+            <h3>10.2 Documentación y Reporte</h3>
+            
+            <p>
+                La documentación del proyecto, incluyendo el reporte técnico, README.md y visualizaciones, fue desarrollada 
+                de manera colaborativa por todo el equipo.
+            </p>
+
             <div class="info-box">
                 <h4><i class="fas fa-folder-open"></i> Repositorio del Proyecto</h4>
                 <p>
@@ -1384,6 +1757,18 @@
                         <i class="fab fa-github"></i> https://github.com/andresvie/clasificacion-imagenes-medicas
                     </a>
                 </p>
+            </div>
+
+            <div class="info-box">
+                <h4><i class="fas fa-book"></i> Notebooks del Proyecto</h4>
+                <p>
+                    El proyecto incluye tres notebooks principales que documentan cada fase del trabajo:
+                </p>
+                <ul style="margin-top: 12px; padding-left: 30px;">
+                    <li><i class="fas fa-file-alt"></i> <strong>Parte 1:</strong> Análisis Exploratorio y Preprocesamiento (<code>01_exploratory_and_preprocessing.ipynb</code>)</li>
+                    <li><i class="fas fa-file-alt"></i> <strong>Parte 2:</strong> Extracción de Descriptores (<code>02_feature_extraction.ipynb</code>)</li>
+                    <li><i class="fas fa-file-alt"></i> <strong>Parte 3:</strong> Clasificación y Evaluación (<code>03_classification.ipynb</code>)</li>
+                </ul>
             </div>
 
         </article>

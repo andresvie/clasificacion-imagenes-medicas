@@ -150,7 +150,30 @@ Los resultados se guardan en el directorio `results/`:
 - **Random Forest**: Clasificador basado en árboles de decisión
 - **SVM** (Support Vector Machine): Clasificador con kernel RBF
 
-## Autor
+## Contribuciones
 
-Universidad Nacional de Colombia  
+Este trabajo fue desarrollado en equipo por:
+
+### Parte 1
+- Carlos Andrés Viera Mosquera (cviera@unal.edu.co)
+
+### Parte 2
+- Yenifer Tatiana Guavita Ospino (yguavita@unal.edu.co)
+- Yojan Tamayo Montoya (ytamayom@unal.edu.co)
+
+### Parte 3
+- Lina María Montoya Zuluaga (limontoyaz@unal.edu.co)
+
+## Enlaces Útiles
+
+- [GitHub Pages del Proyecto](https://carlosviera.github.io/clasificacion-imagenes-medicas/)
+- [Documentación de OpenCV](https://docs.opencv.org/)
+
+## Licencia
+
+Este proyecto es parte de un trabajo académico de la Universidad Nacional de Colombia.
+
+---
+
+**Universidad Nacional de Colombia**  
 Visión por Computador 3009228 - Semestre 2025-02
